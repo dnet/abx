@@ -24,7 +24,7 @@ parse_chunk(?RES_STRING_POOL_TYPE, HeaderSize, ChunkSize, Payload, Acc) ->
 parse_chunk(?RES_XML_START_ELEMENT_TYPE, _HeaderSize, _ChunkSize,
 		<<LineNum:32/little, Comment:32/little, NsIndex:32/little, NameIndex:32/little,
 			AttrStart:16/little, AttrSize:16/little, AttrCount:16/little,
-			_IdClassStyle:6/binary, AttrBytes/binary>>, Acc) ->
+			0:48, AttrBytes/binary>>, Acc) ->
 	AttrStart = 20,
 	AttrSize = 20,
 	StringPool = proplists:get_value(string_pool, Acc),

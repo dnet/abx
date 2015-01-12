@@ -1,6 +1,6 @@
 % from https://developer.android.com/reference/android/util/TypedValue.html
 -define(TYPE_REFERENCE,   16#0001).
--define(TYPE_FIRST_INT,   16#0010).
+-define(TYPE_INT_DECIMAL, 16#0010).
 -define(TYPE_INT_HEX,     16#0011).
 -define(TYPE_INT_BOOLEAN, 16#0012).
 

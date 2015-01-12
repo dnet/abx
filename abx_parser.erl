@@ -21,8 +21,6 @@ parse_chunks(<<ChunkType:16/little, HeaderSize:16/little, ChunkSize:32/little, R
 
 parse_chunk(?RES_STRING_POOL_TYPE, HeaderSize, ChunkSize, Payload, Acc) ->
 	[{string_pool, parse_string_pool(HeaderSize, ChunkSize, Payload)} | Acc];
-parse_chunk(?RES_XML_RESOURCE_MAP_TYPE, _HeaderSize, _ChunkSize, Payload, Acc) ->
-	[{res_map, parse_res_map(Payload)} | Acc];
 parse_chunk(?RES_XML_START_NAMESPACE_TYPE, _HeaderSize, _ChunkSize,
 		<<LineNum:32/little, Comment:32/little, Prefix:32/little, URI:32/little>>, Acc) ->
 	StringPool = proplists:get_value(string_pool, Acc),
@@ -56,11 +54,6 @@ parse_typed_value(<<8:16/little, 0, ?TYPE_INT_BOOLEAN, _:32>>) -> true;
 parse_typed_value(<<8:16/little, 0, ?TYPE_FIRST_INT, Ref:32/little>>) -> Ref;
 parse_typed_value(<<8:16/little, 0, ?TYPE_INT_HEX, Ref:32/little>>) -> {hex, Ref};
 parse_typed_value(<<8:16/little, 0, ?TYPE_REFERENCE, Ref:32/little>>) -> {ref, Ref}.
-
-parse_res_map(Payload) -> parse_res_map(Payload, []).
-parse_res_map(<<>>, Acc) -> lists:reverse(Acc);
-parse_res_map(<<Index:32/little, Payload/binary>>, Acc) ->
-	parse_res_map(Payload, [Index | Acc]).
 
 parse_string_pool(HeaderSize, ChunkSize, <<StringCount:32/little, StyleCount:32/little, Flag:32/little, StringStart:32/little, StyleStart:32/little, Rest/binary>>) ->
 	StringIndicesByteCount = StringCount * 4,

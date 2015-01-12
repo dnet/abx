@@ -21,11 +21,6 @@ parse_chunks(<<ChunkType:16/little, HeaderSize:16/little, ChunkSize:32/little, R
 
 parse_chunk(?RES_STRING_POOL_TYPE, HeaderSize, ChunkSize, Payload, Acc) ->
 	[{string_pool, parse_string_pool(HeaderSize, ChunkSize, Payload)} | Acc];
-parse_chunk(?RES_XML_START_NAMESPACE_TYPE, _HeaderSize, _ChunkSize,
-		<<LineNum:32/little, Comment:32/little, Prefix:32/little, URI:32/little>>, Acc) ->
-	StringPool = proplists:get_value(string_pool, Acc),
-	[{start_ns, LineNum, Comment, lists:nth(Prefix + 1, StringPool),
-		lists:nth(URI + 1, StringPool)} | Acc];
 parse_chunk(?RES_XML_START_ELEMENT_TYPE, _HeaderSize, _ChunkSize,
 		<<LineNum:32/little, Comment:32/little, NsIndex:32/little, NameIndex:32/little,
 			AttrStart:16/little, AttrSize:16/little, AttrCount:16/little,

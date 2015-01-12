@@ -6,5 +6,4 @@
 
 -define(RES_STRING_POOL_TYPE,         16#0001).
 -define(RES_XML_TYPE,                 16#0003).
--define(RES_XML_START_NAMESPACE_TYPE, 16#0100).
 -define(RES_XML_START_ELEMENT_TYPE,   16#0102).

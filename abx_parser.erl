@@ -30,8 +30,8 @@ parse_chunk(?RES_XML_START_ELEMENT_TYPE, _HeaderSize, _ChunkSize,
 	StringPool = proplists:get_value(string_pool, Acc),
 	Attributes = parse_attributes(AttrBytes, AttrCount, StringPool),
 	[{element, LineNum, Comment, ?SP(NsIndex), ?SP(NameIndex), Attributes} | Acc];
-parse_chunk(Type, HeaderSize, ChunkSize, Payload, Acc) ->
-	[{unknown, Type, HeaderSize, ChunkSize, Payload} | Acc].
+parse_chunk(Type, _HeaderSize, _ChunkSize, Payload, Acc) ->
+	[{unknown, Type, Payload} | Acc].
 
 parse_attributes(Payload, Count, StringPool) -> parse_attributes(Payload, Count, StringPool, []).
 parse_attributes(<<>>, 0, _StringPool, Acc) -> lists:reverse(Acc);

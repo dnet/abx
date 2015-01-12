@@ -18,8 +18,11 @@ serialize_chunks(Chunks) -> serialize_chunks(Chunks, <<>>).
 serialize_chunks([], Acc) -> Acc;
 serialize_chunks([Chunk | Chunks], Acc) ->
 	{Type, HeaderSize, Serialized} = serialize_chunk(Chunk),
+	FullSize = byte_size(Serialized) + 8,
+	PadBytes = case FullSize rem 4 of 0 -> 0; R -> 4 - R end,
+	Padding = binary:copy(<<0>>, PadBytes),
 	serialize_chunks(Chunks, <<Acc/binary, Type:16/little, HeaderSize:16/little,
-		(byte_size(Serialized) + 8):32/little, Serialized/binary>>).
+		(FullSize + PadBytes):32/little, Serialized/binary, Padding/binary>>).
 
 serialize_chunk({string_pool, Pool}) ->
 	{?RES_STRING_POOL_TYPE, 28, serialize_string_pool(Pool)};

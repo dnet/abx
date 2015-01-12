@@ -68,24 +68,24 @@ parse_string_pool(HeaderSize, ChunkSize, <<StringCount:32/little, StyleCount:32/
 	StringIndicesByteCount = StringCount * 4,
 	StyleByteCount = StyleCount * 4,
 	<<StringIndices:StringIndicesByteCount/binary, _Styles:StyleByteCount/binary, Strings/binary>> = Rest,
-	read_strings(StringIndices, Strings, {HeaderSize, ChunkSize, StringCount, StyleStart}).
+	parse_strings(StringIndices, Strings, {HeaderSize, ChunkSize, StringCount, StyleStart}).
 
-read_strings(StringIndices, Strings, Params) ->
-	{Result, <<>>} = read_strings(StringIndices, Strings, [], Params),
+parse_strings(StringIndices, Strings, Params) ->
+	{Result, <<>>} = parse_strings(StringIndices, Strings, [], Params),
 	lists:reverse(Result).
 
-read_strings(<<Index:32/little>>, Strings, Acc, {HeaderSize, ChunkSize, StringCount, 0}) ->
+parse_strings(<<Index:32/little>>, Strings, Acc, {HeaderSize, ChunkSize, StringCount, 0}) ->
 	StringLen = ChunkSize - Index - HeaderSize - 4 * StringCount,
-	read_string(StringLen, Strings, Acc);
-read_strings(<<Index:32/little>>, Strings, Acc, {_, _, _, StyleStart}) ->
+	parse_string(StringLen, Strings, Acc);
+parse_strings(<<Index:32/little>>, Strings, Acc, {_, _, _, StyleStart}) ->
 	StringLen = StyleStart - Index,
-	read_string(StringLen, Strings, Acc);
-read_strings(<<Index:32/little, NextIndex:32/little, Indices/binary>>, Strings, Acc, Params) ->
+	parse_string(StringLen, Strings, Acc);
+parse_strings(<<Index:32/little, NextIndex:32/little, Indices/binary>>, Strings, Acc, Params) ->
 	StringLen = NextIndex - Index,
-	{Acc2, Strings2} = read_string(StringLen, Strings, Acc),
-	read_strings(<<NextIndex:32/little, Indices/binary>>, Strings2, Acc2, Params).
+	{Acc2, Strings2} = parse_string(StringLen, Strings, Acc),
+	parse_strings(<<NextIndex:32/little, Indices/binary>>, Strings2, Acc2, Params).
 
-read_string(Length, <<Len1, Len2, Payload/binary>>, Acc) ->
+parse_string(Length, <<Len1, Len2, Payload/binary>>, Acc) ->
 	ActualLength = case Len1 of
 		Len2 -> Len2;
 		_ -> Len1 bor (Len2 bsl 8)

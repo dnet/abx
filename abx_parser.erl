@@ -52,7 +52,11 @@ parse_attributes(<<NsIndex:32/little, NameIndex:32/little, RawValue:32/little,
 	Attribute = {?SP(NsIndex), ?SP(NameIndex), Value},
 	parse_attributes(Rest, Count - 1, StringPool, [Attribute | Acc]).
 
-parse_typed_value(<<_DataSize:16/little, 0, _DataType, Ref:32/little>>) -> Ref.
+parse_typed_value(<<8:16/little, 0, ?TYPE_INT_BOOLEAN, 0:32/little>>) -> false;
+parse_typed_value(<<8:16/little, 0, ?TYPE_INT_BOOLEAN, _:32>>) -> true;
+parse_typed_value(<<8:16/little, 0, ?TYPE_FIRST_INT, Ref:32/little>>) -> Ref;
+parse_typed_value(<<8:16/little, 0, ?TYPE_INT_HEX, Ref:32/little>>) -> {hex, Ref};
+parse_typed_value(<<8:16/little, 0, ?TYPE_REFERENCE, Ref:32/little>>) -> {ref, Ref}.
 
 parse_res_map(Payload) -> parse_res_map(Payload, []).
 parse_res_map(<<>>, Acc) -> lists:reverse(Acc);

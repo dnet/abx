@@ -8,7 +8,7 @@ parse_file(FileName) ->
 	{ok, Contents} = file:read_file(FileName),
 	parse_binary(Contents).
 
-parse_binary(<<?RES_XML_TYPE:16/little, _ChunkHeaderSize:16/little,
+parse_binary(<<?RES_XML_TYPE:16/little, 8:16/little,
 		ChunkSize:32/little, Rest/binary>> = Chunk) when byte_size(Chunk) =:= ChunkSize ->
 	parse_chunks(Rest, []).
 

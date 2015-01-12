@@ -7,7 +7,12 @@ main([InputFileName, OutputFileName | Transformations]) ->
 main([FileName]) ->
 	self_test(FileName);
 main(_) ->
-	io:format(standard_error, "Usage: ./abx.sh input.xml   # self-test regarding that XML~n", []),
+	io:format(standard_error,
+		"Usage: ./abx.sh input.xml                          # self-test regarding that XML~n"
+		"       ./abx.sh input.xml output.xml foo.bar=qux   # update string~n"
+		"       ./abx.sh input.xml output.xml foo.bar=123   # update number~n"
+		"       ./abx.sh input.xml output.xml foo.bar=true  # update boolean~n"
+		"       ./abx.sh input.xml output.xml a.b=c e.f=g   # update multiple~n", []),
 	halt(1).
 
 self_test(FileName) ->

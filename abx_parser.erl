@@ -20,7 +20,6 @@ parse_chunks(<<ChunkType:16/little, HeaderSize:16/little, ChunkSize:32/little, R
 	parse_chunks(Next, Acc2).
 
 parse_chunk(?RES_STRING_POOL_TYPE, HeaderSize, ChunkSize, Payload, Acc) ->
-	io:format("String pool, header size: ~p chunk size: ~p\n", [HeaderSize, ChunkSize]),
 	[{string_pool, parse_string_pool(HeaderSize, ChunkSize, Payload)} | Acc];
 parse_chunk(?RES_XML_RESOURCE_MAP_TYPE, _HeaderSize, _ChunkSize, Payload, Acc) ->
 	[{res_map, parse_res_map(Payload)} | Acc];

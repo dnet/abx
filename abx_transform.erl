@@ -4,11 +4,29 @@
 -define(TRANSFORM_RE, "^([a-z]+)\\\.([a-z]+)=(.+)$").
 
 apply_transformation(Transformation, Model) ->
-	StringPool = proplists:get_value(string_pool, Model),
-	CompiledTF = compile_transformation(Transformation),
-	ExtendedStringPool = extend_stringpool(StringPool, CompiledTF),
-	io:format(standard_error, "TODO ~p~n", [CompiledTF]),
-	[{string_pool, ExtendedStringPool} | proplists:delete(string_pool, Model)].
+	walk_model(compile_transformation(Transformation), Model).
+
+walk_model(T, M) -> walk_model(T, M, []).
+walk_model(_T, [], Acc) -> lists:reverse(Acc);
+walk_model(Transform, [Chunk | Model], Acc) ->
+	NewChunk = transform_chunk(Transform, Chunk),
+	walk_model(Transform, Model, [NewChunk | Acc]).
+
+transform_chunk(Transform, {string_pool, StringPool}) ->
+	{string_pool, extend_stringpool(StringPool, Transform)};
+transform_chunk({Name, _, _}=T, {element, _, _, _, Name, OldAttr}=E) ->
+	setelement(6, E, transform_attributes(T, OldAttr));
+transform_chunk(_, Chunk) -> Chunk.
+
+transform_attributes(T, A) -> transform_attributes(T, A, []).
+transform_attributes({_, N, V}, [], Acc) ->
+	NewAttr = {<<"http://schemas.android.com/apk/res/android">>, N, V},
+	lists:reverse(Acc, [NewAttr]);
+transform_attributes({_, Name, NewValue}, [{_, Name, _}=A | Attributes], Acc) ->
+	lists:reverse(Attributes, [setelement(3, A, NewValue) | Acc]);
+transform_attributes(T, [Attribute | Attributes], Acc) ->
+	transform_attributes(T, Attributes, [Attribute | Acc]).
+
 
 extend_stringpool(Pool, Params) when is_tuple(Params) ->
 	extend_stringpool(Pool, lists:filter(fun erlang:is_binary/1, tuple_to_list(Params)));

@@ -63,9 +63,11 @@ parse_res_map(<<>>, Acc) -> lists:reverse(Acc);
 parse_res_map(<<Index:32/little, Payload/binary>>, Acc) ->
 	parse_res_map(Payload, [Index | Acc]).
 
-parse_string_pool(HeaderSize, ChunkSize, <<StringCount:32/little, StyleCount:32/little, _Flag:32/little, _StringStart:32/little, StyleStart:32/little, Rest/binary>>) ->
+parse_string_pool(HeaderSize, ChunkSize, <<StringCount:32/little, StyleCount:32/little, Flag:32/little, StringStart:32/little, StyleStart:32/little, Rest/binary>>) ->
 	StringIndicesByteCount = StringCount * 4,
 	StyleByteCount = StyleCount * 4,
+	Flag = 0,
+	StringStart = HeaderSize + StringIndicesByteCount + StyleByteCount,
 	<<StringIndices:StringIndicesByteCount/binary, _Styles:StyleByteCount/binary, Strings/binary>> = Rest,
 	parse_strings(StringIndices, Strings, {HeaderSize, ChunkSize, StringCount, StyleStart}).
 

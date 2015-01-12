@@ -1,13 +1,8 @@
--module(abx).
--export([parse_file/1]).
+-module(abx_parser).
+-export([parse_file/1, parse_binary/1]).
 
 -define(SP(X), case X of 16#FFFFFFFF -> null; _ -> lists:nth((X) + 1, StringPool) end).
-
--define(RES_STRING_POOL_TYPE,         16#0001).
--define(RES_XML_TYPE,                 16#0003).
--define(RES_XML_START_NAMESPACE_TYPE, 16#0100).
--define(RES_XML_START_ELEMENT_TYPE,   16#0102).
--define(RES_XML_RESOURCE_MAP_TYPE,    16#0180).
+-include("abx.hrl").
 
 parse_file(FileName) ->
 	{ok, Contents} = file:read_file(FileName),

@@ -1,5 +1,9 @@
 #!/usr/bin/env escript
 
+main([InputFileName, OutputFileName | Transformations]) ->
+	Input = abx_parser:parse_file(InputFileName),
+	Output = lists:foldl(fun abx_transform:apply_transformation/2, Input, Transformations),
+	abx_serializer:serialize_to_file(OutputFileName, Output);
 main([FileName]) ->
 	self_test(FileName);
 main(_) ->

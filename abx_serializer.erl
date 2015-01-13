@@ -26,6 +26,11 @@ serialize_chunks([Chunk | Chunks], Acc) ->
 
 serialize_chunk({string_pool, Pool}) ->
 	{?RES_STRING_POOL_TYPE, 28, serialize_string_pool(Pool)};
+serialize_chunk({start_ns, LineNum, Comment, Prefix, URI}) ->
+	PrefixIndex = query_string_pool(Prefix),
+	UriIndex = query_string_pool(URI),
+	{?RES_XML_START_NAMESPACE_TYPE, 16, <<LineNum:32/little,
+		Comment:32/little, PrefixIndex:32/little, UriIndex:32/little>>};
 serialize_chunk({element, LineNum, Comment, Namespace, Name, Attributes}) ->
 	AttrStart = 20,
 	AttrSize = 20,

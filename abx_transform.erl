@@ -15,7 +15,7 @@ walk_model(Transform, [Chunk | Model], Acc) ->
 
 transform_chunk(Transform, {string_pool, StringPool}) ->
 	{string_pool, extend_stringpool(StringPool, Transform)};
-transform_chunk({Name, _, _}=T, {element, _, _, _, Name, OldAttr}=E) ->
+transform_chunk({_, Name, _, _}=T, {element, _, _, _, Name, OldAttr}=E) ->
 	setelement(6, E, transform_attributes(T, OldAttr));
 transform_chunk(_, Chunk) -> Chunk.
 

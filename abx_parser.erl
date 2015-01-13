@@ -39,6 +39,11 @@ parse_chunk(?RES_XML_START_NAMESPACE_TYPE, _HeaderSize, _ChunkSize,
 	StringPool = proplists:get_value(string_pool, Acc),
 	[{start_ns, LineNum, Comment, lists:nth(Prefix + 1, StringPool),
 		lists:nth(URI + 1, StringPool)} | Acc];
+parse_chunk(?RES_XML_END_NAMESPACE_TYPE, _HeaderSize, _ChunkSize,
+		<<LineNum:32/little, Comment:32/little, Prefix:32/little, URI:32/little>>, Acc) ->
+	StringPool = proplists:get_value(string_pool, Acc),
+	[{end_ns, LineNum, Comment, lists:nth(Prefix + 1, StringPool),
+		lists:nth(URI + 1, StringPool)} | Acc];
 parse_chunk(?RES_XML_START_ELEMENT_TYPE, _HeaderSize, _ChunkSize,
 		<<LineNum:32/little, Comment:32/little, NsIndex:32/little, NameIndex:32/little,
 			AttrStart:16/little, AttrSize:16/little, AttrCount:16/little,
@@ -51,9 +56,7 @@ parse_chunk(?RES_XML_START_ELEMENT_TYPE, _HeaderSize, _ChunkSize,
 parse_chunk(?RES_XML_END_ELEMENT_TYPE, _HeaderSize, _ChunkSize,
 		<<LineNum:32/little, Comment:32/little, NsIndex:32/little, NameIndex:32/little>>, Acc) ->
 	StringPool = proplists:get_value(string_pool, Acc),
-	[{end_element, LineNum, Comment, ?SP(NsIndex), ?SP(NameIndex)} | Acc];
-parse_chunk(Type, HeaderSize, _ChunkSize, Payload, Acc) ->
-	[{unknown, Type, HeaderSize, Payload} | Acc].
+	[{end_element, LineNum, Comment, ?SP(NsIndex), ?SP(NameIndex)} | Acc].
 
 parse_attributes(Payload, Count, StringPool) -> parse_attributes(Payload, Count, StringPool, []).
 parse_attributes(<<>>, 0, _StringPool, Acc) -> lists:reverse(Acc);

@@ -31,6 +31,11 @@ serialize_chunk({start_ns, LineNum, Comment, Prefix, URI}) ->
 	UriIndex = query_string_pool(URI),
 	{?RES_XML_START_NAMESPACE_TYPE, 16, <<LineNum:32/little,
 		Comment:32/little, PrefixIndex:32/little, UriIndex:32/little>>};
+serialize_chunk({end_ns, LineNum, Comment, Prefix, URI}) ->
+	PrefixIndex = query_string_pool(Prefix),
+	UriIndex = query_string_pool(URI),
+	{?RES_XML_END_NAMESPACE_TYPE, 16, <<LineNum:32/little,
+		Comment:32/little, PrefixIndex:32/little, UriIndex:32/little>>};
 serialize_chunk({element, LineNum, Comment, Namespace, Name, Attributes}) ->
 	AttrStart = 20,
 	AttrSize = 20,
@@ -47,8 +52,7 @@ serialize_chunk({end_element, LineNum, Comment, Namespace, Name}) ->
 	{?RES_XML_END_ELEMENT_TYPE, 16, <<LineNum:32/little, Comment:32/little,
 		NsIndex:32/little, NameIndex:32/little>>};
 serialize_chunk({res_map, Map}) ->
-	{?RES_XML_RESOURCE_MAP_TYPE, 8, << <<R:32/little>> || R <- Map>>};
-serialize_chunk({unknown, Type, HeaderSize, Payload}) -> {Type, HeaderSize, Payload}.
+	{?RES_XML_RESOURCE_MAP_TYPE, 8, << <<R:32/little>> || R <- Map>>}.
 
 query_string_pool(null) -> 16#FFFFFFFF;
 query_string_pool(String) -> dict:fetch(String, get(string_pool)).

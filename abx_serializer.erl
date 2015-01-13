@@ -36,6 +36,11 @@ serialize_chunk({element, LineNum, Comment, Namespace, Name, Attributes}) ->
 	{?RES_XML_START_ELEMENT_TYPE, 16, <<LineNum:32/little, Comment:32/little,
 		NsIndex:32/little, NameIndex:32/little, AttrStart:16/little,
 		AttrSize:16/little, AttrCount:16/little, 0:48, AttrBytes/binary>>};
+serialize_chunk({end_element, LineNum, Comment, Namespace, Name}) ->
+	NsIndex = query_string_pool(Namespace),
+	NameIndex = query_string_pool(Name),
+	{?RES_XML_END_ELEMENT_TYPE, 16, <<LineNum:32/little, Comment:32/little,
+		NsIndex:32/little, NameIndex:32/little>>};
 serialize_chunk({res_map, Map}) ->
 	{?RES_XML_RESOURCE_MAP_TYPE, 8, << <<R:32/little>> || R <- Map>>};
 serialize_chunk({unknown, Type, HeaderSize, Payload}) -> {Type, HeaderSize, Payload}.

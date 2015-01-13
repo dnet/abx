@@ -43,6 +43,10 @@ parse_chunk(?RES_XML_START_ELEMENT_TYPE, _HeaderSize, _ChunkSize,
 	StringPool = proplists:get_value(string_pool, Acc),
 	Attributes = parse_attributes(AttrBytes, AttrCount, StringPool),
 	[{element, LineNum, Comment, ?SP(NsIndex), ?SP(NameIndex), Attributes} | Acc];
+parse_chunk(?RES_XML_END_ELEMENT_TYPE, _HeaderSize, _ChunkSize,
+		<<LineNum:32/little, Comment:32/little, NsIndex:32/little, NameIndex:32/little>>, Acc) ->
+	StringPool = proplists:get_value(string_pool, Acc),
+	[{end_element, LineNum, Comment, ?SP(NsIndex), ?SP(NameIndex)} | Acc];
 parse_chunk(Type, HeaderSize, _ChunkSize, Payload, Acc) ->
 	[{unknown, Type, HeaderSize, Payload} | Acc].
 

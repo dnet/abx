@@ -12,6 +12,7 @@ main(_) ->
 		"       ./abx.sh input.xml output.xml foo.bar=qux   # update string~n"
 		"       ./abx.sh input.xml output.xml foo.bar=123   # update number~n"
 		"       ./abx.sh input.xml output.xml foo.bar=true  # update boolean~n"
+		"       ./abx.sh input.xml output.xml {ns}f.b=true  # using namespace~n"
 		"       ./abx.sh input.xml output.xml a.b=c e.f=g   # update multiple~n", []),
 	halt(1).
 

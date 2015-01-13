@@ -1,7 +1,8 @@
 -module(abx_transform).
 -export([apply_transformation/2]).
 
--define(TRANSFORM_RE, "^([a-z]+)\\\.([a-z]+)=(.+)$").
+-define(TRANSFORM_RE, "^(?:{([^}]+)})?([a-z]+)\\\.([a-z]+)=(.+)$").
+-define(DEFAULT_NS, <<"http://schemas.android.com/apk/res/android">>).
 
 apply_transformation(Transformation, Model) ->
 	walk_model(compile_transformation(Transformation), Model).
@@ -19,10 +20,9 @@ transform_chunk({Name, _, _}=T, {element, _, _, _, Name, OldAttr}=E) ->
 transform_chunk(_, Chunk) -> Chunk.
 
 transform_attributes(T, A) -> transform_attributes(T, A, []).
-transform_attributes({_, N, V}, [], Acc) ->
-	NewAttr = {<<"http://schemas.android.com/apk/res/android">>, N, V},
-	lists:reverse(Acc, [NewAttr]);
-transform_attributes({_, Name, NewValue}, [{_, Name, _}=A | Attributes], Acc) ->
+transform_attributes({Ns, _, Nm, V}, [], Acc) ->
+	lists:reverse(Acc, [{Ns, Nm, V}]);
+transform_attributes({Ns, _, Name, NewValue}, [{Ns, Name, _}=A | Attributes], Acc) ->
 	lists:reverse(Attributes, [setelement(3, A, NewValue) | Acc]);
 transform_attributes(T, [Attribute | Attributes], Acc) ->
 	transform_attributes(T, Attributes, [Attribute | Acc]).
@@ -40,8 +40,10 @@ extend_stringpool(Pool, [Param | Params]) ->
 compile_transformation(Transformation) ->
 	case re:run(Transformation, ?TRANSFORM_RE,
 			[anchored, {capture, all_but_first, binary}, caseless]) of
-		{match, [Element, Attribute, Value]} ->
-			{Element, Attribute, compile_value(Value)};
+		{match, [<<>>, Element, Attribute, Value]} ->
+			{?DEFAULT_NS, Element, Attribute, compile_value(Value)};
+		{match, [Namespace, Element, Attribute, Value]} ->
+			{Namespace, Element, Attribute, compile_value(Value)};
 		nomatch -> throw({invalid_transformation, Transformation})
 	end.
 

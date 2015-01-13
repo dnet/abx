@@ -1,12 +1,23 @@
 -module(abx_parser).
--export([parse_file/1, parse_binary/1]).
+-export([parse_file/1, parse_binary/1, read_xml/1]).
 
 -define(SP(X), case X of 16#FFFFFFFF -> null; _ -> lists:nth((X) + 1, StringPool) end).
+-define(MANIFEST, "AndroidManifest.xml").
 -include("abx.hrl").
 
 parse_file(FileName) ->
-	{ok, Contents} = file:read_file(FileName),
-	parse_binary(Contents).
+	parse_binary(read_xml(FileName)).
+
+read_xml(FileName) ->
+	case filename:extension(FileName) of
+		".apk" -> extract_manifest(FileName);
+		_ -> {ok, C} = file:read_file(FileName), C
+	end.
+
+extract_manifest(FileName) ->
+	{ok, [{?MANIFEST, Contents}]} = zip:extract(FileName,
+		[{file_list, [?MANIFEST]}, memory, cooked]),
+	Contents.
 
 parse_binary(<<?RES_XML_TYPE:16/little, 8:16/little,
 		ChunkSize:32/little, Rest/binary>> = Chunk) when byte_size(Chunk) =:= ChunkSize ->

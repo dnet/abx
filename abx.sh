@@ -17,7 +17,7 @@ main(_) ->
 	halt(1).
 
 self_test(FileName) ->
-	{ok, XML} = file:read_file(FileName),
+	XML = abx_parser:read_xml(FileName),
 	case abx_serializer:serialize_to_binary(abx_parser:parse_binary(XML)) of
 		XML -> io:format(standard_error,
 			"\033[32mSelf-test succeeded, proceed with injection\033[0m~n", []);

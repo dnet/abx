@@ -12,6 +12,9 @@ apply_transformation(Transformation, Model) ->
 
 transform_chunk(Transform, {string_pool, StringPool}, _) ->
 	{string_pool, extend_stringpool(StringPool, Transform)};
+transform_chunk(Transform, {res_map, Map}, Model) ->
+	StringPool = proplists:get_value(string_pool, Model),
+	{res_map, extend_res_map(StringPool, Transform, Map)};
 transform_chunk(#transform{tag=Name}=T, {element, _, _, _, Name, Attr}=E, _) ->
 	setelement(6, E, transform_attributes(T, Attr));
 transform_chunk(_, Chunk, _) -> Chunk.
@@ -25,6 +28,18 @@ transform_attributes(#transform{ns=Ns, tag=Name, value=NewValue},
 transform_attributes(T, [Attribute | Attributes], Acc) ->
 	transform_attributes(T, Attributes, [Attribute | Acc]).
 
+extend_res_map(Pool, Params, Map) when is_tuple(Params) ->
+	extend_res_map(Pool, lists:filter(fun erlang:is_binary/1, tuple_to_list(Params)), Map);
+extend_res_map(_, [], Map) -> Map;
+extend_res_map(Pool, [Param | Params], Map) ->
+	case lists:member(Param, Pool) of
+		true -> extend_res_map(Pool, Params, Map);
+		false ->
+			case abx_attr_res:lookup(Param) of
+				not_res -> extend_res_map(Pool, Params, Map);
+				R -> extend_res_map(Pool, Params, [R | Map])
+			end
+	end.
 
 extend_stringpool(Pool, Params) when is_tuple(Params) ->
 	extend_stringpool(Pool, lists:filter(fun erlang:is_binary/1, tuple_to_list(Params)));
@@ -32,7 +47,11 @@ extend_stringpool(Pool, []) -> Pool;
 extend_stringpool(Pool, [Param | Params]) ->
 	case lists:member(Param, Pool) of
 		true -> extend_stringpool(Pool, Params);
-		false -> extend_stringpool(Pool ++ [Param], Params)
+		false ->
+			case abx_attr_res:lookup(Param) of
+				not_res -> extend_stringpool(Pool ++ [Param], Params);
+				_ -> extend_stringpool([Param | Pool], Params)
+			end
 	end.
 
 compile_transformation(Transformation) ->

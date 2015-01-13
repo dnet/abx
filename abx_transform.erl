@@ -7,13 +7,8 @@
 -record(transform, {ns=?DEFAULT_NS, tag, attr, value}).
 
 apply_transformation(Transformation, Model) ->
-	walk_model(compile_transformation(Transformation), Model).
-
-walk_model(T, M) -> walk_model(T, M, []).
-walk_model(_T, [], Acc) -> lists:reverse(Acc);
-walk_model(Transform, [Chunk | Model], Acc) ->
-	NewChunk = transform_chunk(Transform, Chunk),
-	walk_model(Transform, Model, [NewChunk | Acc]).
+	T = compile_transformation(Transformation),
+	[transform_chunk(T, Chunk) || Chunk <- Model].
 
 transform_chunk(Transform, {string_pool, StringPool}) ->
 	{string_pool, extend_stringpool(StringPool, Transform)};

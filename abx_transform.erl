@@ -8,13 +8,13 @@
 
 apply_transformation(Transformation, Model) ->
 	T = compile_transformation(Transformation),
-	[transform_chunk(T, Chunk) || Chunk <- Model].
+	[transform_chunk(T, Chunk, Model) || Chunk <- Model].
 
-transform_chunk(Transform, {string_pool, StringPool}) ->
+transform_chunk(Transform, {string_pool, StringPool}, _) ->
 	{string_pool, extend_stringpool(StringPool, Transform)};
-transform_chunk(#transform{tag=Name}=T, {element, _, _, _, Name, OldAttr}=E) ->
-	setelement(6, E, transform_attributes(T, OldAttr));
-transform_chunk(_, Chunk) -> Chunk.
+transform_chunk(#transform{tag=Name}=T, {element, _, _, _, Name, Attr}=E, _) ->
+	setelement(6, E, transform_attributes(T, Attr));
+transform_chunk(_, Chunk, _) -> Chunk.
 
 transform_attributes(T, A) -> transform_attributes(T, A, []).
 transform_attributes(#transform{ns=Ns, attr=Attr, value=Value}, [], Acc) ->
